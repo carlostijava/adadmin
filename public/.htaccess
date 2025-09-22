@@ -1,0 +1,45 @@
+# Configuração Apache para diretório public
+
+# Habilitar rewrite engine
+RewriteEngine On
+
+# Redirecionar para index.php se arquivo/diretório não existir
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Permitir acesso a arquivos estáticos
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|ico|woff|woff2|ttf|svg)$">
+    # Cache de arquivos estáticos
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        ExpiresDefault "access plus 1 month"
+    </IfModule>
+    
+    # Headers para cache
+    <IfModule mod_headers.c>
+        Header set Cache-Control "public, max-age=2592000"
+    </IfModule>
+</FilesMatch>
+
+# Configurações de segurança para PHP
+<FilesMatch "\.php$">
+    <IfModule mod_headers.c>
+        Header always set X-Content-Type-Options nosniff
+        Header always set X-Frame-Options DENY
+        Header always set X-XSS-Protection "1; mode=block"
+    </IfModule>
+</FilesMatch>
+
+# Prevenir acesso a arquivos de backup e temporários
+<FilesMatch "\.(bak|backup|swp|tmp)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Compressão de arquivos de texto
+<IfModule mod_deflate.c>
+    <FilesMatch "\.(css|js|html)$">
+        SetOutputFilter DEFLATE
+    </FilesMatch>
+</IfModule>

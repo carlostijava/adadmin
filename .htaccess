@@ -1,0 +1,77 @@
+# Configuração Apache para AD Manager
+
+# Habilitar rewrite engine
+RewriteEngine On
+
+# Definir diretório base (se necessário)
+# RewriteBase /
+
+# Redirecionar todas as requisições para index.php no diretório public
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/index.php [QSA,L]
+
+# Bloquear acesso direto a arquivos de configuração
+<FilesMatch "^(config|logs|app)/">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Bloquear acesso a arquivos sensíveis
+<FilesMatch "\.(log|ini|conf)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Configurações de segurança
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'"
+</IfModule>
+
+# Configurações de cache
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/ico "access plus 1 month"
+    ExpiresByType image/icon "access plus 1 month"
+    ExpiresByType text/ico "access plus 1 month"
+    ExpiresByType application/ico "access plus 1 month"
+</IfModule>
+
+# Compressão gzip
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+</IfModule>
+
+# Configurações de PHP (se mod_php estiver habilitado)
+<IfModule mod_php7.c>
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 0
+    php_value session.use_only_cookies 1
+    php_value display_errors 0
+    php_value log_errors 1
+    php_value error_log ../logs/php_errors.log
+</IfModule>
+
+# Prevenir listagem de diretórios
+Options -Indexes
+
+# Definir página de erro customizada (opcional)
+# ErrorDocument 404 /public/index.php
